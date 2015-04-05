@@ -6,6 +6,7 @@ var cheerio = Meteor.npmRequire("cheerio");
 
 var BASE_PATH = path.relative(process.cwd(), process.env.PWD);
 var JSON_PATH = path.join(BASE_PATH, "public/useragents.json");
+var DETAILED_JSON_PATH = path.join(BASE_PATH, "public/detailed_useragents.json");
 
 var url = "http://useragentstring.com/pages/Browserlist/";
 
@@ -20,8 +21,12 @@ if (httpResponse.statusCode === 200) {
     $ = cheerio.load(httpResponse.content);
 
     var useragents = [];
+    var detailed = [];
 
     $("#liste ul").each(function(index, element) {
+       
+            
+        detailed.push({name:$(this).prev().text(),useragent:$(this).find("li a").first().text()});    
         var A = $(this).find("li a").first().text();
 
         if (1 < (A.match(/;/g) || []).length)
@@ -30,5 +35,6 @@ if (httpResponse.statusCode === 200) {
 
     console.log("random pick test => " + useragents[Math.floor(Math.random() * useragents.length)]);
 
+    fs.writeFileSync(DETAILED_JSON_PATH, JSON.stringify(detailed));
     fs.writeFileSync(JSON_PATH, JSON.stringify(useragents));
 }
